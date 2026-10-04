@@ -98,8 +98,8 @@ export default function TripForm({ values, onChange, details, onDetailsChange, e
 
       <Disclosure title="Trip assumptions" badge={optionsChanged ? "Edited" : "FMCSA defaults"}>
         <div className="grid grid-cols-2 gap-3">
-          <NumberField label="Pickup" suffix="min" value={values.options.pickup_minutes} min={0} max={720} onChange={(v) => setOption("pickup_minutes", v)} />
-          <NumberField label="Drop-off" suffix="min" value={values.options.dropoff_minutes} min={0} max={720} onChange={(v) => setOption("dropoff_minutes", v)} />
+          <NumberField label="Pickup" suffix="min" value={values.options.pickup_minutes} min={15} max={720} onChange={(v) => setOption("pickup_minutes", v)} />
+          <NumberField label="Drop-off" suffix="min" value={values.options.dropoff_minutes} min={15} max={720} onChange={(v) => setOption("dropoff_minutes", v)} />
           <NumberField label="Fuel every" suffix="mi" value={values.options.fuel_interval_miles} min={100} max={3000} step={50} onChange={(v) => setOption("fuel_interval_miles", v)} />
           <NumberField label="Fuel stop" suffix="min" value={values.options.fuel_minutes} min={5} max={120} onChange={(v) => setOption("fuel_minutes", v)} />
           <NumberField label="Pre-trip inspection" suffix="min" value={values.options.pre_trip_minutes} min={0} max={120} onChange={(v) => setOption("pre_trip_minutes", v)} />
@@ -232,6 +232,13 @@ function Disclosure({ title, badge, children }: { title: string; badge?: string;
 
 function NumberField(props: { label: string; suffix: string; value: number; min: number; max: number; step?: number; onChange: (v: number) => void }) {
   const { label, suffix, value, min, max, step = 5, onChange } = props;
+  // Keep the raw text while typing; clamping per keystroke turns "8" into the minimum before "800" is typed.
+  const [draft, setDraft] = useState<string | null>(null);
+  const commit = (raw: string) => {
+    const next = Number(raw);
+    onChange(raw.trim() !== "" && Number.isFinite(next) ? Math.min(max, Math.max(min, next)) : value);
+    setDraft(null);
+  };
   return (
     <label className="block">
       <span className="mb-1 block text-[12px] font-medium text-slate-600">{label}</span>
@@ -241,11 +248,15 @@ function NumberField(props: { label: string; suffix: string; value: number; min:
           min={min}
           max={max}
           step={step}
-          value={value}
+          value={draft ?? value}
           onChange={(event) => {
-            const next = Number(event.target.value);
-            if (Number.isFinite(next)) onChange(Math.min(max, Math.max(min, next)));
+            const raw = event.target.value;
+            const next = Number(raw);
+            // Spinner arrows and complete in-range values apply immediately; anything else waits for blur.
+            if (raw.trim() !== "" && Number.isFinite(next) && next >= min && next <= max) onChange(next);
+            setDraft(raw);
           }}
+          onBlur={(event) => commit(event.target.value)}
           className="input py-2 pr-11 text-sm tabular-nums"
         />
         <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-[12px] text-slate-400">{suffix}</span>

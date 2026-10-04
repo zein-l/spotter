@@ -165,3 +165,14 @@ def test_geocode_autocomplete(client):
 def test_reverse_geocode(client):
     assert client.get("/api/reverse-geocode", {"lat": 32.78, "lon": -96.80}).json()["result"]["label"] == "Dallas, TX"
     assert client.get("/api/reverse-geocode", {"lat": 200, "lon": 0}).status_code == 400
+
+
+def test_zero_minute_stops_are_rejected_not_a_500(client, osrm):
+    response = client.post("/api/trips/plan", trip(options={"pickup_minutes": 0, "dropoff_minutes": 0}), format="json")
+    assert response.status_code == 400
+    assert response.json()["field"] == "options"
+
+
+def test_shortest_allowed_stops_plan(client, osrm):
+    data = client.post("/api/trips/plan", trip(options={"pickup_minutes": 15, "dropoff_minutes": 15}), format="json").json()
+    assert data["compliance"]["passed"]

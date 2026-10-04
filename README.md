@@ -5,7 +5,7 @@ pickup, the drop-off and the hours already used in the 70-hour cycle; the app ro
 schedules every legally required break, rest, fuel stop and restart, and fills out a
 **driver's daily log sheet for each day** of the trip.
 
-**Live demo:** _add your Vercel URL here_ · **Stack:** Django 5.2 + Django REST Framework · React 19 + TypeScript · MapLibre GL · Tailwind CSS
+**Live demo:** **[spotter-rho-gray.vercel.app](https://spotter-rho-gray.vercel.app/)** · **Stack:** Django 5.2 + Django REST Framework · React 19 + TypeScript · MapLibre GL · Tailwind CSS
 
 ---
 

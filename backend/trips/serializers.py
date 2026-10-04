@@ -32,8 +32,8 @@ class LocationSerializer(serializers.Serializer):
 
 
 class TripOptionsSerializer(serializers.Serializer):
-    pickup_minutes = serializers.IntegerField(min_value=0, max_value=12 * 60, default=60)
-    dropoff_minutes = serializers.IntegerField(min_value=0, max_value=12 * 60, default=60)
+    pickup_minutes = serializers.IntegerField(min_value=15, max_value=12 * 60, default=60)
+    dropoff_minutes = serializers.IntegerField(min_value=15, max_value=12 * 60, default=60)
     fuel_interval_miles = serializers.FloatField(min_value=100, max_value=3000, default=1000)
     fuel_minutes = serializers.IntegerField(min_value=5, max_value=120, default=30)
     pre_trip_minutes = serializers.IntegerField(min_value=0, max_value=120, default=30)
