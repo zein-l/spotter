@@ -10,6 +10,7 @@ from ..hos import (
     Activity,
     HOSRules,
     Place,
+    PlanningError,
     Segment,
     Status,
     TripSettings,
@@ -18,6 +19,7 @@ from ..hos import (
     validate_plan,
 )
 from . import geocoding
+from .geo import haversine_miles
 from .places import get_index
 from .routing import Route, get_route
 
@@ -56,6 +58,11 @@ def plan(request: TripRequest) -> dict:
         key: _resolve(location, key)
         for key, location in zip(WAYPOINT_KEYS, (request.current, request.pickup, request.dropoff))
     }
+    pickup, dropoff = locations["pickup"], locations["dropoff"]
+    if haversine_miles((pickup.lat, pickup.lon), (dropoff.lat, dropoff.lon)) < 0.05:
+        error = PlanningError("Pickup and drop-off are the same place; choose a different drop-off.")
+        error.field = "dropoff_location"
+        raise error
     names = [locations[key].label for key in WAYPOINT_KEYS]
     route = get_route([(locations[k].lat, locations[k].lon) for k in WAYPOINT_KEYS], names)
 

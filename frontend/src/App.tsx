@@ -5,7 +5,7 @@ import { ApiError, planTrip, warmUp } from "./api/client";
 import type { LogDetails, TripPlan, TripRequest } from "./api/types";
 import TripForm, { type FieldErrors, type FormValues } from "./components/form/TripForm";
 import LogSheets from "./components/logs/LogSheets";
-import RouteMap from "./components/map/RouteMap";
+import RouteMap, { type StopFocus } from "./components/map/RouteMap";
 import Compliance from "./components/results/Compliance";
 import Directions from "./components/results/Directions";
 import Itinerary from "./components/results/Itinerary";
@@ -69,7 +69,8 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
-  const [selectedStop, setSelectedStop] = useState<number | null>(null);
+  const [focus, setFocus] = useState<StopFocus | null>(null);
+  const selectStop = useCallback((index: number | null) => setFocus(index === null ? null : { index, nonce: Date.now() }), []);
   const abortRef = useRef<AbortController | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
 
@@ -94,7 +95,7 @@ export default function App() {
         dropoff: { ...result.locations.dropoff },
       };
       setPlan(result);
-      setSelectedStop(null);
+      setFocus(null);
       setValues(resolved);
       writeTripToUrl({ ...resolved, cycleUsed: Number(form.cycleUsed) });
       if (window.matchMedia("(max-width: 1023px)").matches) {
@@ -182,7 +183,7 @@ export default function App() {
           <section id="route" className="card print-hide scroll-mt-28 overflow-hidden">
             <div className={clsx("grid", plan && "xl:grid-cols-[minmax(0,1fr)_380px]")}>
               <div className={clsx("relative", plan ? "h-[420px] sm:h-[520px] xl:h-[600px]" : "h-[380px] sm:h-[460px]")}>
-                <RouteMap plan={plan} selectedStop={selectedStop} onSelectStop={setSelectedStop} loading={loading} />
+                <RouteMap plan={plan} focus={focus} onSelectStop={selectStop} loading={loading} />
               </div>
               {plan && (
                 <div className="flex max-h-[600px] flex-col border-t border-mist-200 xl:border-t-0 xl:border-l">
@@ -191,7 +192,7 @@ export default function App() {
                     <p className="text-[12px] text-slate-500">Select a stop to find it on the map.</p>
                   </div>
                   <div className="flex-1 overflow-y-auto px-3 pt-1 pb-3">
-                    <Itinerary plan={plan} selectedStop={selectedStop} onSelectStop={setSelectedStop} />
+                    <Itinerary plan={plan} selectedStop={focus?.index ?? null} onSelectStop={selectStop} />
                   </div>
                 </div>
               )}

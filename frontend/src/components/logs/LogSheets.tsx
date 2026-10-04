@@ -69,6 +69,7 @@ function SheetCard({ log, details, totalDays }: { log: DailyLog; details: LogDet
           <Printer className="size-3.5" /> Print day
         </button>
       </header>
+      <p className="no-print px-4 pt-2 text-[11.5px] text-slate-500 md:hidden">Swipe sideways to see the full sheet →</p>
       <div className="overflow-x-auto">
         <div className="min-w-[760px] p-2 sm:p-3">
           <LogSheet log={log} details={details} totalDays={totalDays} />

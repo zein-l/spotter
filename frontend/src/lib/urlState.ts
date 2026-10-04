@@ -39,6 +39,14 @@ function decodeLocation(raw: string | null): LocationValue | null {
 }
 
 export function writeTripToUrl(inputs: TripInputs): void {
+  window.history.replaceState(null, "", `${window.location.pathname}?${encodeTrip(inputs)}`);
+}
+
+export function readTripFromUrl(): TripInputs | null {
+  return decodeTrip(window.location.search);
+}
+
+export function encodeTrip(inputs: TripInputs): string {
   const params = new URLSearchParams();
   params.set("from", encodeLocation(inputs.current));
   params.set("pickup", encodeLocation(inputs.pickup));
@@ -48,11 +56,11 @@ export function writeTripToUrl(inputs: TripInputs): void {
   for (const [key, short] of Object.entries(OPTION_KEYS) as [keyof TripOptions, string][]) {
     if (inputs.options[key] !== DEFAULT_OPTIONS[key]) params.set(short, String(inputs.options[key]));
   }
-  window.history.replaceState(null, "", `${window.location.pathname}?${params}`);
+  return params.toString();
 }
 
-export function readTripFromUrl(): TripInputs | null {
-  const params = new URLSearchParams(window.location.search);
+export function decodeTrip(search: string): TripInputs | null {
+  const params = new URLSearchParams(search);
   const current = decodeLocation(params.get("from"));
   const pickup = decodeLocation(params.get("pickup"));
   const dropoff = decodeLocation(params.get("to"));

@@ -118,6 +118,12 @@ def test_validation_errors_name_the_field(client, overrides, field):
     assert body["field"] == field and body["detail"]
 
 
+def test_pickup_and_dropoff_must_differ(client):
+    response = client.post("/api/trips/plan", trip(dropoff_location=ST_LOUIS), format="json")
+    assert response.status_code == 422
+    assert response.json()["field"] == "dropoff_location"
+
+
 @override_settings(GEOCODER="offline")
 def test_unknown_place_is_a_422_on_that_field(client):
     response = client.post("/api/trips/plan", trip(pickup_location={"label": "Qwertyzzz Nowhere"}), format="json")

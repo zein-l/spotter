@@ -41,14 +41,19 @@ interface MarkerItem {
   stops: Stop[];
 }
 
+export interface StopFocus {
+  index: number;
+  nonce: number; // re-selecting the same stop still re-centres the map
+}
+
 interface Props {
   plan: TripPlan | null;
-  selectedStop: number | null;
+  focus: StopFocus | null;
   onSelectStop: (index: number | null) => void;
   loading?: boolean;
 }
 
-export default function RouteMap({ plan, selectedStop, onSelectStop, loading }: Props) {
+export default function RouteMap({ plan, focus, onSelectStop, loading }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapLibre | null>(null);
   const markersRef = useRef<Map<string, Marker>>(new Map());
@@ -193,8 +198,8 @@ export default function RouteMap({ plan, selectedStop, onSelectStop, loading }: 
   // ---------------------------------------------------------------- focus a stop from the itinerary
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || selectedStop === null || !plan) return;
-    const item = items.find((i) => i.stops.some((s) => s.index === selectedStop));
+    if (!map || !focus || !plan) return;
+    const item = items.find((i) => i.stops.some((s) => s.index === focus.index));
     if (!item) return;
     map.flyTo({ center: [item.lon, item.lat], zoom: Math.max(map.getZoom(), 8.5), duration: 900 });
     markersRef.current.forEach((marker, key) => {
@@ -202,7 +207,7 @@ export default function RouteMap({ plan, selectedStop, onSelectStop, loading }: 
       if (key === item.key && !popup.isOpen()) marker.togglePopup();
       if (key !== item.key && popup.isOpen()) marker.togglePopup();
     });
-  }, [selectedStop, items, plan]);
+  }, [focus, items, plan]);
 
   const present = useMemo(() => new Set(items.filter((i) => !i.waypoint).map((i) => i.stops[0]?.type)), [items]);
 
